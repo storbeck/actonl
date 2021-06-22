@@ -1,8 +1,9 @@
 # actonl
-ACTivision ONline List
+**ACT**ivision **ON**line **L**ist
 
 Just move .env.example to .env and fill out with your credentails.
-Starts a web server and displays your online/offline friends list.
+
+Starts a web server and displays your online/offline friends list at http://localhost:8080.
 
 example:
 ```
