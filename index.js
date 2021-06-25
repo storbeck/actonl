@@ -8,28 +8,18 @@ const { sort_identities } = require('./utilities/process');
 let data;
 let sorted;
 
-// Login on server start
-(async () => {
-    try {
-        await API.login(process.env.ACTIVISION_USERNAME, process.env.ACTIVISION_PASSWORD);
-
-        console.log('Logged in to API')
-    } catch(error) {
-        console.error(error)
-    }
-})()
+const getData = async() => {
+    data = await API.getEventFeed();
+    return sort_identities(data.identities)
+}
 
 const requestListener = async (req, res) => {
     // Ignore fancy things such as a favicon
     if (req.url === '/favicon.ico') return;
 
 
-    // Pull new feed on refresh
-    data = await API.getEventFeed();
-    
-
     // Process our data
-    sorted = sort_identities(data.identities)
+    sorted = await getData()
     console.log(`Received event feed -- ${sorted.online.length} ↑  ||  ${sorted.offline.length} ↓`);
 
     // Write to web server
@@ -37,5 +27,21 @@ const requestListener = async (req, res) => {
     res.end(print(sorted, res))
 }
 
-const server = http.createServer(requestListener)
-server.listen(process.env.PORT || 8080)
+// Login on server start
+(async () => {
+    try {
+        await API.login(process.env.ACTIVISION_USERNAME, process.env.ACTIVISION_PASSWORD);
+
+	if (process.argv[2] === '--server') {
+            console.log('Logged in to API')
+	    const server = http.createServer(requestListener)
+	    server.listen(process.env.PORT || 8080)
+	} else {
+	    print(await getData()) 
+	}
+
+    } catch(error) {
+        console.error(error)
+    }
+})()
+
